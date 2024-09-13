@@ -60,8 +60,6 @@ class LoginSerializer(serializers.ModelSerializer):
         user = authenticate(request, email=email, password=password)
         if not user:
             raise AuthenticationFailed("invalid credential try again")
-        if not user.is_verified:
-            raise AuthenticationFailed("Email is not verified")
         tokens=user.tokens()
         return {
             'email':user.email,
