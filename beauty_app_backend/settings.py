@@ -1,18 +1,24 @@
+import environ
 from pathlib import Path
 from datetime import timedelta
+
+env = environ.Env(
+    DEBUG = (bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%sb7wbc5sa7!ixq+s^f&-=g#yffn2+5v%=)6+ace7!g20zw0wd'
+SECRET_KEY = "django-insecure-%sb7wbc5sa7!ixq+s^f&-=g#yffn2+5v%=)6+ace7!g20zw0wd"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = []
 
@@ -132,3 +138,9 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = "accounts.User"
+
+
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env("EMAIL_PORT")
