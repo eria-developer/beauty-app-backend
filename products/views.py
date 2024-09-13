@@ -8,7 +8,6 @@ from .serializers import ProductSerializer
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]  # Only authenticated users can create or update products
     queryset = Product.objects.all()
 
     # Create a new Product
