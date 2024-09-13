@@ -15,30 +15,71 @@ from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 
+# class UserRegisterSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(max_length=68, min_length=6, write_only=False) #setting write_only=False since we are sttill in development
+#     password2= serializers.CharField(max_length=68, min_length=6, write_only=True)  #setting write_only=False since we are sttill in development 
+
+#     class Meta:
+#         model=User
+#         fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2']
+
+#     def validate(self, attrs):
+#         password=attrs.get('password', '')
+#         password2 =attrs.get('password2', '')
+#         if password !=password2:
+#             raise serializers.ValidationError("passwords do not match")
+         
+#         return attrs
+
+#     def create(self, validated_data):
+#         user= User.objects.create_user(
+#             email=validated_data['email'],
+#             first_name=validated_data.get('first_name'),
+#             last_name=validated_data.get('last_name'),
+#             password=validated_data.get('password')
+#             )
+#         return user
+
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=68, min_length=6, write_only=False) #setting write_only=False since we are sttill in development
-    password2= serializers.CharField(max_length=68, min_length=6, write_only=True)  #setting write_only=False since we are sttill in development 
+    password = serializers.CharField(max_length=68, min_length=6, write_only=True)
+    password2 = serializers.CharField(max_length=68, min_length=6, write_only=True)
+    access_token = serializers.CharField(max_length=255, read_only=True)
+    refresh_token = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
-        model=User
-        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2']
+        model = User
+        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2', 'access_token', 'refresh_token']
 
     def validate(self, attrs):
-        password=attrs.get('password', '')
-        password2 =attrs.get('password2', '')
-        if password !=password2:
-            raise serializers.ValidationError("passwords do not match")
-         
+        password = attrs.get('password', '')
+        password2 = attrs.get('password2', '')
+        if password != password2:
+            raise serializers.ValidationError("Passwords do not match")
         return attrs
 
     def create(self, validated_data):
-        user= User.objects.create_user(
+        user = User.objects.create_user(
             email=validated_data['email'],
             first_name=validated_data.get('first_name'),
             last_name=validated_data.get('last_name'),
             password=validated_data.get('password')
-            )
-        return user
+        )
+        
+        # Authenticate the user
+        request = self.context.get('request')
+        authenticated_user = authenticate(request, email=user.email, password=validated_data.get('password'))
+        
+        if not authenticated_user:
+            raise AuthenticationFailed("Unable to log in after registration")
+
+        # Generate tokens
+        tokens = authenticated_user.tokens()
+        
+        # Add tokens to the response
+        validated_data['access_token'] = str(tokens.get('access'))
+        validated_data['refresh_token'] = str(tokens.get('refresh'))
+        
+        return validated_data
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=155, min_length=6)
