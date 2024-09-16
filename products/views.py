@@ -45,7 +45,7 @@ class ProductView(GenericAPIView):
 
 class ProductSearchView(ListAPIView):
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]  # Only authenticated users can search for products
+    # permission_classes = [IsAuthenticated]  # Only authenticated users can search for products
 
     def get_queryset(self):
         name = self.request.query_params.get('name', '')
@@ -82,7 +82,7 @@ class CategoryView(GenericAPIView):
 
 class CategorySearchView(ListAPIView):
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]  # Only authenticated users can search for categorys
+    # permission_classes = [IsAuthenticated]  # Only authenticated users can search for categorys
 
     def get_queryset(self):
         name = self.request.query_params.get('name', '')
