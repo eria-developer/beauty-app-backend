@@ -8,6 +8,6 @@ urlpatterns = [
     path('products/search/', ProductSearchView.as_view(), name='product_search'),  # Search Products
 
     # categories urls 
-    path('categories/', ProductView.as_view(), name='category_list_create'),
+    path('categories/', CategoryView.as_view(), name='category_list_create'),
     path('categories/search/', CategorySearchView.as_view(), name='category_search')
 ]
