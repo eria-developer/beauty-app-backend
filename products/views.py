@@ -3,8 +3,8 @@ from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Category
+from .serializers import ProductSerializer, CategorySerializer
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -57,5 +57,39 @@ class ProductSearchView(ListAPIView):
             queryset = queryset.filter(name__icontains=name)
         if category:
             queryset = queryset.filter(category=category)
+
+        return queryset
+    
+
+
+
+class CategoryView(GenericAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+    # Retrieve or list all categorys
+    def get(self, request, pk=None):
+        if pk:
+            category = get_object_or_404(Category, pk=pk)
+            serializer = self.serializer_class(category)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            categorys = Category.objects.all()
+            serializer = self.serializer_class(categorys, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class CategorySearchView(ListAPIView):
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]  # Only authenticated users can search for categorys
+
+    def get_queryset(self):
+        name = self.request.query_params.get('name', '')
+        
+        queryset = Category.objects.all()
+        
+        if name:
+            queryset = queryset.filter(name__icontains=name)
 
         return queryset
