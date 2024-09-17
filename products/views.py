@@ -100,6 +100,7 @@ class CategorySearchView(ListAPIView):
 
 class CheckoutView(GenericAPIView):
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         cart_items = request.data.get('items', [])
@@ -113,12 +114,20 @@ class CheckoutView(GenericAPIView):
             quantity = item.get('quantity')
             product = get_object_or_404(Product, id=product_id)
 
+            if product.stock < quantity:
+                order.delete()
+                return Response({'error': f'Not enough stock for {product.name}'}, status=status.HTTP_400_BAD_REQUEST)
+
             OrderItem.objects.create(
                 order=order,
                 product=product,
                 quantity=quantity,
                 price=product.price
             )
+
+            # Update product stock
+            product.stock -= quantity
+            product.save()
         
         order_serializer = self.serializer_class(order)
         return Response(order_serializer.data, status=status.HTTP_201_CREATED)
