@@ -3,8 +3,8 @@ from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .models import Product, Category, Order, OrderItem
+from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -93,3 +93,33 @@ class CategorySearchView(ListAPIView):
             queryset = queryset.filter(name__icontains=name)
 
         return queryset
+    
+
+
+
+
+class CheckoutView(GenericAPIView):
+    serializer_class = OrderSerializer
+
+    def post(self, request):
+        cart_items = request.data.get('items', [])
+        if not cart_items:
+            return Response({'error': 'No items in cart'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order = Order.objects.create(user=request.user)
+        
+        for item in cart_items:
+            product_id = item.get('productId')
+            quantity = item.get('quantity')
+            product = get_object_or_404(Product, id=product_id)
+
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity,
+                price=product.price
+            )
+        
+        order_serializer = self.serializer_class(order)
+        return Response(order_serializer.data, status=status.HTTP_201_CREATED)
+
