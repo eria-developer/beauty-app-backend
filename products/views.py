@@ -132,3 +132,11 @@ class CheckoutView(GenericAPIView):
         order_serializer = self.serializer_class(order)
         return Response(order_serializer.data, status=status.HTTP_201_CREATED)
 
+
+
+class UserOrdersView(ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
