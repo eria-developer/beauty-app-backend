@@ -21,7 +21,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
+    loyalty_points_earned = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'is_paid', 'items']
+        fields = ['id', 'user', 'created_at', 'is_paid', 'items', 'loyalty_points_earned']

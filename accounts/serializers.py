@@ -48,7 +48,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2', 'access_token', 'refresh_token']
+        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2','loyalty_points', 'access_token', 'refresh_token']
 
     def validate(self, attrs):
         password = attrs.get('password', '')
@@ -62,6 +62,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             first_name=validated_data.get('first_name'),
             last_name=validated_data.get('last_name'),
+            loyalty_points=validated_data.get('loyalty_points'),
             password=validated_data.get('password')
         )
         
@@ -85,12 +86,13 @@ class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=155, min_length=6)
     password=serializers.CharField(max_length=68, write_only=True)
     full_name=serializers.CharField(max_length=255, read_only=True)
+    loyalty_points=serializers.IntegerField(default=0)
     access_token=serializers.CharField(max_length=255, read_only=True)
     refresh_token=serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", 'email', 'password', 'full_name', 'access_token', 'refresh_token']
+        fields = ["id", 'email', 'password', 'full_name', 'loyalty_points', 'access_token', 'refresh_token']
 
     
 
@@ -106,6 +108,7 @@ class LoginSerializer(serializers.ModelSerializer):
             "id": user.id,
             'email':user.email,
             'full_name':user.get_full_name,
+            'loyalty_points':user.loyalty_points,
             "access_token":str(tokens.get('access')),
             "refresh_token":str(tokens.get('refresh'))
         }

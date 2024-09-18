@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
+from django.db.models import F
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -129,8 +130,20 @@ class CheckoutView(GenericAPIView):
             product.stock -= quantity
             product.save()
         
+        # Calculate and add loyalty points
+        loyalty_points = order.calculate_loyalty_points()
+        order.loyalty_points_earned = loyalty_points
+        order.save()
+
+        # Update user's total loyalty points
+        request.user.loyalty_points = F('loyalty_points') + loyalty_points
+        request.user.save()
+        
         order_serializer = self.serializer_class(order)
-        return Response(order_serializer.data, status=status.HTTP_201_CREATED)
+        return Response({
+            'order': order_serializer.data,
+            'loyalty_points_earned': loyalty_points
+        }, status=status.HTTP_201_CREATED)
 
 
 

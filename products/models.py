@@ -27,9 +27,14 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False)
+    loyalty_points_earned = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Order {self.id} by {self.user.first_name}"
+
+    def calculate_loyalty_points(self):
+        total_amount = sum(item.get_total_price() for item in self.items.all())
+        return int(total_amount * 0.1)  # 10% of the total amount as loyalty points
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
