@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from decimal import Decimal
 
 class Category(models.Model):
     name = models.CharField(max_length=64)
@@ -34,7 +35,7 @@ class Order(models.Model):
 
     def calculate_loyalty_points(self):
         total_amount = sum(item.get_total_price() for item in self.items.all())
-        return int(total_amount * 0.1)  # 10% of the total amount as loyalty points
+        return int(total_amount * Decimal('0.001'))  # 0.1% of the total amount as loyalty points
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

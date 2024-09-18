@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
 from django.db.models import F
+from django.db import transaction
+from accounts.models import User
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -103,6 +105,7 @@ class CheckoutView(GenericAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def post(self, request):
         cart_items = request.data.get('items', [])
         if not cart_items:
@@ -115,10 +118,11 @@ class CheckoutView(GenericAPIView):
             quantity = item.get('quantity')
             product = get_object_or_404(Product, id=product_id)
 
-            if product.stock < quantity:
-                order.delete()
-                return Response({'error': f'Not enough stock for {product.name}'}, status=status.HTTP_400_BAD_REQUEST)
-
+            if product.stock:
+                if product.stock < quantity:
+                    order.delete()
+                    return Response({'error': f'Not enough stock for {product.name}'}, status=status.HTTP_400_BAD_REQUEST)
+            
             OrderItem.objects.create(
                 order=order,
                 product=product,
@@ -127,7 +131,8 @@ class CheckoutView(GenericAPIView):
             )
 
             # Update product stock
-            product.stock -= quantity
+            if product.stock:
+                product.stock -= quantity
             product.save()
         
         # Calculate and add loyalty points
@@ -136,13 +141,15 @@ class CheckoutView(GenericAPIView):
         order.save()
 
         # Update user's total loyalty points
-        request.user.loyalty_points = F('loyalty_points') + loyalty_points
-        request.user.save()
+        user = User.objects.select_for_update().get(id=request.user.id)
+        user.loyalty_points = (user.loyalty_points or 0) + loyalty_points
+        user.save()
         
         order_serializer = self.serializer_class(order)
         return Response({
             'order': order_serializer.data,
-            'loyalty_points_earned': loyalty_points
+            'loyalty_points_earned': loyalty_points,
+            'total_loyalty_points': user.loyalty_points
         }, status=status.HTTP_201_CREATED)
 
 
