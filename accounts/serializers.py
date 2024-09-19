@@ -201,7 +201,7 @@ class LogoutUserSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'loyalty_points', 'date_joined', 'last_login']
+        fields = ['id', 'email', 'first_name', 'last_name', 'loyalty_points', 'date_joined', 'last_login', 'profile_picture']
         read_only_fields = ['id', 'email', 'loyalty_points', 'date_joined', 'last_login']
 
     loyalty_points = serializers.IntegerField(read_only=True)

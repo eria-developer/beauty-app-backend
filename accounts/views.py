@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import User
 from rest_framework import generics, permissions
 from .serializers import UserProfileSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Create your views here.
 
@@ -119,6 +120,7 @@ class LogoutApiView(GenericAPIView):
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_object(self):
         return self.request.user

@@ -6,6 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 AUTH_PROVIDERS ={'email':'email', 'google':'google', 'github':'github', 'linkedin':'linkedin'}
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.BigAutoField(primary_key=True, editable=False) 
     email = models.EmailField(
@@ -21,6 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(auto_now=True)
     auth_provider=models.CharField(max_length=50, blank=False, null=False, default=AUTH_PROVIDERS.get('email'))
     loyalty_points = models.PositiveIntegerField(default=0, null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
 
 
     USERNAME_FIELD = "email"
@@ -43,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def get_full_name(self):
         return f"{self.first_name.title()} {self.last_name.title()}"
-    
+
 
 class OneTimePassword(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
