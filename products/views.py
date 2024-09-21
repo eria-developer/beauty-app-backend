@@ -160,3 +160,26 @@ class UserOrdersView(ListAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-created_at')
+    
+
+
+class SellerOrdersView(GenericAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(
+            items__product__seller=self.request.user
+        ).distinct()
+
+    def get(self, request):
+        orders = self.get_queryset()
+        serializer = self.serializer_class(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        order = get_object_or_404(Order, pk=pk, items__product__seller=request.user)
+        serializer = self.serializer_class(order, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Order status updated successfully'}, status=status.HTTP_200_OK)

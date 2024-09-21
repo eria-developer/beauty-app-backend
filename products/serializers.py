@@ -22,7 +22,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     loyalty_points_earned = serializers.IntegerField(read_only=True)
+    status = serializers.ChoiceField(choices=Order.STATUS_CHOICES, required=False)  # Added field
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'is_paid', 'items', 'loyalty_points_earned']
+        fields = ['id', 'user', 'created_at', 'is_paid', 'status', 'items', 'loyalty_points_earned']
