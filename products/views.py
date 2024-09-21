@@ -45,6 +45,12 @@ class ProductView(GenericAPIView):
         product.delete()
         return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
+    def get_user_products(self, request):
+        products = Product.objects.filter(seller=request.user)
+        serializer = self.serializer_class(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 class ProductSearchView(ListAPIView):
     serializer_class = ProductSerializer
