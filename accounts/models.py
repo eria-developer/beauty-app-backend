@@ -8,6 +8,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 AUTH_PROVIDERS ={'email':'email', 'google':'google', 'github':'github', 'linkedin':'linkedin'}
 
 
+ROLE_CHOICES = (
+    ('user', 'User'),
+    ('admin', 'Admin'),
+)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.BigAutoField(primary_key=True, editable=False) 
     email = models.EmailField(
@@ -24,7 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     auth_provider=models.CharField(max_length=50, blank=False, null=False, default=AUTH_PROVIDERS.get('email'))
     loyalty_points = models.PositiveIntegerField(default=0, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
-
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
 
     USERNAME_FIELD = "email"
 

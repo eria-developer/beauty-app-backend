@@ -47,7 +47,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2','loyalty_points', 'access_token', 'refresh_token']
+        fields = ["id", 'email', 'first_name', 'last_name', 'password', 'password2', 'loyalty_points', 'role', 'access_token', 'refresh_token']
 
     def validate(self, attrs):
         password = attrs.get('password', '')
@@ -62,6 +62,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name'),
             last_name=validated_data.get('last_name'),
             loyalty_points=validated_data.get('loyalty_points'),
+            role=validated_data.get('role', 'user'),  # Default to 'user' if not provided
             password=validated_data.get('password')
         )
         
@@ -91,7 +92,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", 'email', 'password', 'full_name', 'loyalty_points', 'access_token', 'refresh_token']
+        fields = ["id", 'email', 'password', 'full_name', 'loyalty_points', 'role', 'access_token', 'refresh_token']
 
     
 
@@ -108,6 +109,7 @@ class LoginSerializer(serializers.ModelSerializer):
             'email':user.email,
             'full_name':user.get_full_name,
             'loyalty_points':user.loyalty_points,
+            'role': user.role,
             "access_token":str(tokens.get('access')),
             "refresh_token":str(tokens.get('refresh'))
         }
@@ -201,7 +203,7 @@ class LogoutUserSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'loyalty_points', 'date_joined', 'last_login', 'profile_picture']
-        read_only_fields = ['id', 'email', 'loyalty_points', 'date_joined', 'last_login']
+        fields = ['id', 'email', 'first_name', 'last_name', 'loyalty_points', 'date_joined', 'last_login', 'profile_picture', 'role']
+        read_only_fields = ['id', 'email', 'loyalty_points', 'date_joined', 'last_login', 'role']
 
     loyalty_points = serializers.IntegerField(read_only=True)

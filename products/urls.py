@@ -31,6 +31,4 @@ urlpatterns = [
     # checking out views
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('user-orders/', UserOrdersView.as_view(), name='user_orders'),
-    
-    path('user-products/', ProductView.as_view(), name='user_products'),
 ]
