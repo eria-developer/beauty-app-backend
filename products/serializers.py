@@ -20,10 +20,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'quantity', 'price']
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
-    loyalty_points_earned = serializers.IntegerField(read_only=True)
-    status = serializers.ChoiceField(choices=Order.STATUS_CHOICES)
+    items = OrderItemSerializer(many=True, read_only=True)
+    user = serializers.StringRelatedField()
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'is_paid', 'status', 'items', 'loyalty_points_earned']
+        fields = ['id', 'user', 'created_at', 'is_paid', 'status', 'items', 'loyalty_points_earned', 'total_amount']
+
+    def get_total_amount(self, obj):
+        return sum(item.get_total_price() for item in obj.items.all())
