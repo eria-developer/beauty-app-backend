@@ -8,6 +8,7 @@ from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
 from django.db.models import F
 from django.db import transaction
 from accounts.models import User
+from .permissions import IsAdminOrSeller
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -171,9 +172,11 @@ class UserOrdersView(ListAPIView):
 
 class SellerOrdersView(GenericAPIView):
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrSeller]
 
     def get_queryset(self):
+        if self.request.user.role == 'admin':
+            return Order.objects.all()
         return Order.objects.filter(
             items__product__seller=self.request.user
         ).distinct()
@@ -184,7 +187,8 @@ class SellerOrdersView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, pk):
-        order = get_object_or_404(Order, pk=pk, items__product__seller=request.user)
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
         serializer = self.serializer_class(order, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

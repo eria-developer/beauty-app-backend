@@ -22,7 +22,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     loyalty_points_earned = serializers.IntegerField(read_only=True)
-    status = serializers.ChoiceField(choices=Order.STATUS_CHOICES, required=False)  # Added field
+    status = serializers.ChoiceField(choices=Order.STATUS_CHOICES)
 
     class Meta:
         model = Order
