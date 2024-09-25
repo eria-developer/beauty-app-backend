@@ -172,8 +172,13 @@ class AdminOrdersView(ListAPIView):
     def get_queryset(self):
         return Order.objects.all().order_by('-created_at')
 
+    def get(self, request, *args, **kwargs):
+        if 'pk' in kwargs:
+            return self.retrieve(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        instance = get_object_or_404(Order, pk=kwargs['pk'])
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -183,4 +188,5 @@ class AdminOrdersView(ListAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Order status updated successfully'}, status=status.HTTP_200_OK)
-    
+
+        
