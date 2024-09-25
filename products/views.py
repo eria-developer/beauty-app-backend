@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from .models import Product, Category, Order, OrderItem
 from .serializers import ProductSerializer, CategorySerializer, OrderSerializer
@@ -52,7 +52,6 @@ class ProductView(GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 class ProductSearchView(ListAPIView):
     serializer_class = ProductSerializer
     # permission_classes = [IsAuthenticated]  # Only authenticated users can search for products
@@ -71,8 +70,6 @@ class ProductSearchView(ListAPIView):
         return queryset
     
 
-
-
 class CategoryView(GenericAPIView):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
@@ -89,7 +86,6 @@ class CategoryView(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 class CategorySearchView(ListAPIView):
     serializer_class = CategorySerializer
     # permission_classes = [IsAuthenticated]  # Only authenticated users can search for categorys
@@ -104,9 +100,6 @@ class CategorySearchView(ListAPIView):
 
         return queryset
     
-
-
-
 
 class CheckoutView(GenericAPIView):
     serializer_class = OrderSerializer
@@ -160,36 +153,34 @@ class CheckoutView(GenericAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-
 class UserOrdersView(ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-created_at')
-    
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = get_object_or_404(Order, pk=kwargs['pk'], user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)   
 
-class SellerOrdersView(GenericAPIView):
+class AdminOrdersView(ListAPIView):
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrSeller]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
-        if self.request.user.role == 'admin':
-            return Order.objects.all()
-        return Order.objects.filter(
-            items__product__seller=self.request.user
-        ).distinct()
+        return Order.objects.all().order_by('-created_at')
 
-    def get(self, request):
-        orders = self.get_queryset()
-        serializer = self.serializer_class(orders, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def patch(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
-        self.check_object_permissions(request, order)
         serializer = self.serializer_class(order, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Order status updated successfully'}, status=status.HTTP_200_OK)
+    

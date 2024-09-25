@@ -3,34 +3,16 @@ from .views import ProductView, ProductSearchView, CategorySearchView, CategoryV
 
 urlpatterns = [
     # Product URLs
-    path('products/', ProductView.as_view(), name='product_list_create'),  # List and Create Products
-    path('products/<int:pk>/', ProductView.as_view(), name='product_detail'),  # Retrieve, Update, Delete Product
-    path('products/search/', ProductSearchView.as_view(), name='product_search'),  # Search Products
+    path('products/', ProductView.as_view(), name='product_list_create'),
+    path('products/<int:pk>/', ProductView.as_view(), name='product_detail'),
+    path('products/search/', ProductSearchView.as_view(), name='product_search'),
 
     # Category URLs
     path('categories/', CategoryView.as_view(), name='category_list_create'),
     path('categories/search/', CategorySearchView.as_view(), name='category_search'),
 
-    # Checkout and Orders
+    # Checkout
     path('checkout/', CheckoutView.as_view(), name='checkout'),
-    path('user-orders/', UserOrdersView.as_view(), name='user_orders'),
-
-    # Seller Orders
-    # path('seller-orders/', SellerOrdersView.as_view(), name='seller_orders'),  # List all seller orders
-    # path('seller-orders/<int:pk>/update-status/', SellerOrdersView.as_view(), name='update_order_status'),  # Update order status
-    
-    # product urls 
-    path('products/', ProductView.as_view(), name='product_list_create'),  # List and Create Products
-    path('products/<int:pk>/', ProductView.as_view(), name='product_detail'),  # Retrieve, Update, Delete Product
-    path('products/search/', ProductSearchView.as_view(), name='product_search'),  # Search Products
-
-    # categories urls 
-    path('categories/', CategoryView.as_view(), name='category_list_create'),
-    path('categories/search/', CategorySearchView.as_view(), name='category_search'),
-
-    # checking out views
-    path('checkout/', CheckoutView.as_view(), name='checkout'),
-    path('user-orders/', UserOrdersView.as_view(), name='user_orders'),
 
     # User Orders
     path('user-orders/', UserOrdersView.as_view(), name='user_orders'),

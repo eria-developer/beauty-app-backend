@@ -23,6 +23,7 @@ class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.StringRelatedField()
     total_amount = serializers.SerializerMethodField()
+    status = serializers.ChoiceField(choices=Order.STATUS_CHOICES, required=False)
 
     class Meta:
         model = Order
