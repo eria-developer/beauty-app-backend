@@ -9,6 +9,7 @@ from django.db.models import F
 from django.db import transaction
 from accounts.models import User
 from .permissions import IsAdminOrSeller
+from rest_framework.views import APIView
 
 class ProductView(GenericAPIView):
     serializer_class = ProductSerializer
@@ -189,4 +190,25 @@ class AdminOrdersView(ListAPIView):
         serializer.save()
         return Response({'message': 'Order status updated successfully'}, status=status.HTTP_200_OK)
 
-        
+
+class RedeemLoyaltyPointsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        points_to_redeem = request.data.get('points', 0)
+        user = request.user
+
+        if points_to_redeem <= 0:
+            return Response({'error': 'Invalid number of points'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user.loyalty_points < points_to_redeem:
+            return Response({'error': 'Not enough loyalty points'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.loyalty_points -= points_to_redeem
+        user.save()
+
+        return Response({
+            'message': f'{points_to_redeem} loyalty points redeemed successfully',
+            'remaining_points': user.loyalty_points
+        }, status=status.HTTP_200_OK)
+
