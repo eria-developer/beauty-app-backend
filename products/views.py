@@ -112,7 +112,7 @@ class CheckoutView(GenericAPIView):
         if not cart_items:
             return Response({'error': 'No items in cart'}, status=status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.create(user=request.user)
+        order = Order.objects.create(user=request.user, is_paid=True)  # Set is_paid to True
         
         for item in cart_items:
             product_id = item.get('productId')
